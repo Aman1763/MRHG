@@ -282,7 +282,7 @@ vector<string> generate_prompt(string start, Direction orientation, BuildingMap 
   Vertex *next = map.getNextVertex(start, travelling);
   /* traverse to the right (if it exists) */
   if (next) {
-    prompt2 += R"(### Right Hallway )" + current_pos + R"(\n)";
+    prompt2 += R"(### Right turn )" + current_pos + R"(\n)";
     prompt2 += traverse_hallway(next, travelling, map);
 
     /* Here we are either at the end of a hallway or we are at an intersection. */
@@ -324,7 +324,7 @@ vector<string> generate_prompt(string start, Direction orientation, BuildingMap 
     
     next = map.getNextVertex(start, travelling);
     if (next) {
-      prompt2 += R"(### Left Hallway )" + current_pos + R"(\n)";
+      prompt2 += R"(### Left turn )" + current_pos + R"(\n)";
       prompt2 += traverse_hallway(next, travelling, map);
 
       if (next) {
