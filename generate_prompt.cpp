@@ -3,164 +3,145 @@
 #include <map>
 #include <fstream>
 #include <sstream>
-#include <vector>
-
-using namespace std;
-
-enum Direction {
-  INTER,
-  NORTH,
-  SOUTH,
-  EAST,
-  WEST
-};
-
-class Vertex {
-  public:
-    Vertex *north;  /* Points to the door to the North if any. */
-    Vertex *south;  /* Points to the door to the South if any. */
-    Vertex *east;   /* Points to the door to the East if any. */
-    Vertex *west;   /* Points to the door to the West if any. */
-    string name;    /* The door name/number. */
-    Direction wall; /* Which direction the the door is on. */
-
-    /* Default Constructor (that probably isnt necessary anymore) */
-    Vertex() : north(nullptr), south(nullptr), east(nullptr), west(nullptr), name(""), wall(NORTH) {}
-
-    /* Constructor */
-    Vertex(const string &_name, Direction _wall) : north(nullptr), south(nullptr), east(nullptr), west(nullptr), name(_name), wall(_wall) {}
-
-    /* Creates an edge between this and _dest. Puts _dest to _direction from this and puts this to the opposite of _direction to _dest */
-    void setEdge(Vertex &_dest, Direction _direction) {
-      switch(_direction) {
-        case NORTH:
-          north = &_dest;
-          _dest.south = this;
-          break;
-        case SOUTH:
-          south = &_dest;
-          _dest.north = this;
-          break;
-        case EAST:
-          east = &_dest;
-          _dest.west = this;
-          break;
-        case WEST:
-          west = &_dest;
-          _dest.east = this;
-          break;
-      }
-    }
-
-    /* Returns the name of this. */
-    string getName() { return name; }
-
-    /* Returns the wall this is on. */
-    Direction getWall() { return wall; }
-
-    /* Returns a pointer to the Vertex that is dir of this. Returns NULL if there is no vertex there. */
-    Vertex *getVertex(Direction dir) {
-      switch(dir) {
-        case NORTH:
-          return north;
-        case SOUTH:
-          return south;
-        case EAST:
-          return east;
-        case WEST:
-          return west;
-        default:
-          /* only here to prevent warnings */
-          return nullptr;
-      }
-    }
-
-    /* Returns the number of other vertices this is connected to */
-    int getConnectivity() {
-      int cnt = 0;
-      if (north)
-        cnt++;
-      if (south)
-        cnt++;
-      if(east)
-        cnt++;
-      if(west)
-        cnt++;
-      return cnt;
-    }
-
-    /* Prints this in a readable format. */
-    void printVertex() {
-      cout << "name: " << name << endl;
-      switch (wall) {
-        case NORTH:
-          cout << "on a wall to the North in its hallway." << endl;
-          break;
-        case SOUTH:
-          cout << "on a wall to the South in its hallway." << endl;
-          break;
-        case EAST:
-          cout << "on a wall to the East in its hallway." << endl;
-          break;
-        case WEST:
-          cout << "on a wall to the West in its hallway." << endl;
-          break;
-        default:
-          cout << "is an intersection." << endl;
-          break;
-      }
-      if (north)
-        cout << "\tTo the North: " << north->name << endl;
-      if (south)
-        cout << "\tTo the South: " << south->name << endl;
-      if (east)
-        cout << "\tTo the East: " << east->name << endl;
-      if (west)
-        cout << "\tTo the West: " << west->name << endl;
-    }
-};
+#include "generate_prompt.h"
 
 
-class BuildingMap {
-  public:
-    map<string, Vertex> vertexList; /* A map containing all the vertices in this. */
+/* All of the Vertex methods. */
+/* Default Constructor (that probably isnt necessary anymore) */
+Vertex::Vertex() : north(nullptr), south(nullptr), east(nullptr), west(nullptr), name(""), wall(NORTH) {}
 
-    /* Adds a new vertex to this. */
-    void addVertex(const string &name, Direction dir) {
-      vertexList.insert(pair<string, Vertex>(name, Vertex(name, dir)));
-    }
+/* Constructor */
+Vertex::Vertex(const string &_name, Direction _wall) : north(nullptr), south(nullptr), east(nullptr), west(nullptr), name(_name), wall(_wall) {}
 
-    /* creates an edge between _x and _y using _dir. */
-    void setEdge(string _x, string _y, Direction _dir) {
-      vertexList.at(_x).setEdge(vertexList.at(_y), _dir);
-    }
+/* Creates an edge between this and _dest. Puts _dest to _direction from this and puts this to the opposite of _direction to _dest */
+void Vertex::setEdge(Vertex &_dest, Direction _direction) {
+  switch(_direction) {
+    case NORTH:
+      north = &_dest;
+      _dest.south = this;
+      break;
+    case SOUTH:
+      south = &_dest;
+      _dest.north = this;
+      break;
+    case EAST:
+      east = &_dest;
+      _dest.west = this;
+      break;
+    case WEST:
+      west = &_dest;
+      _dest.east = this;
+      break;
+  }
+}
 
-    Vertex getVertex(string name) { return vertexList[name]; }
+/* Returns the name of this. */
+string Vertex::getName() { return name; }
 
-    Vertex *getNextVertex(string name, Direction dir) {
-      return vertexList[name].getVertex(dir);
-    }
+/* Returns the wall this is on. */
+Direction Vertex::getWall() { return wall; }
 
-    /* Returns true if key is present in this. */
-    bool contains(string key) {
-      auto it = vertexList.find(key);
-      return it != vertexList.end();
-    }
+/* Returns a pointer to the Vertex that is dir of this. Returns NULL if there is no vertex there. */
+Vertex *Vertex::getVertex(Direction dir) {
+  switch(dir) {
+    case NORTH:
+      return north;
+    case SOUTH:
+      return south;
+    case EAST:
+      return east;
+    case WEST:
+      return west;
+    default:
+      /* only here to prevent warnings */
+      return nullptr;
+  }
+}
 
-    void printMap() {
-      cout << "printing map" << endl;
-      for (auto &it : vertexList) {
-        it.second.printVertex();
-        cout << endl;
-      }
-    }
-};
+/* Returns the number of other vertices this is connected to */
+int Vertex::getConnectivity() {
+  int cnt = 0;
+  if (north)
+    cnt++;
+  if (south)
+    cnt++;
+  if(east)
+    cnt++;
+  if(west)
+    cnt++;
+  return cnt;
+}
 
+/* Prints this in a readable format. */
+void Vertex::printVertex() {
+  cout << "name: " << name << endl;
+  switch (wall) {
+    case NORTH:
+      cout << "on a wall to the North in its hallway." << endl;
+      break;
+    case SOUTH:
+      cout << "on a wall to the South in its hallway." << endl;
+      break;
+    case EAST:
+      cout << "on a wall to the East in its hallway." << endl;
+      break;
+    case WEST:
+      cout << "on a wall to the West in its hallway." << endl;
+      break;
+    default:
+      cout << "is an intersection." << endl;
+      break;
+  }
+  if (north)
+    cout << "\tTo the North: " << north->name << endl;
+  if (south)
+    cout << "\tTo the South: " << south->name << endl;
+  if (east)
+    cout << "\tTo the East: " << east->name << endl;
+  if (west)
+    cout << "\tTo the West: " << west->name << endl;
+}
+
+/* All of the BuildingMap methods. */
+
+/* Adds a new vertex to this. */
+void BuildingMap::addVertex(const string &name, Direction dir) {
+  vertexList.insert(pair<string, Vertex>(name, Vertex(name, dir)));
+}
+
+/* creates an edge between _x and _y using _dir. */
+void BuildingMap::setEdge(string _x, string _y, Direction _dir) {
+  vertexList.at(_x).setEdge(vertexList.at(_y), _dir);
+}
+
+Vertex BuildingMap::getVertex(string name) { return vertexList[name]; }
+
+Vertex *BuildingMap::getNextVertex(string name, Direction dir) {
+  return vertexList[name].getVertex(dir);
+}
+
+/* Returns true if key is present in this. */
+bool BuildingMap::contains(string key) {
+  auto it = vertexList.find(key);
+  return it != vertexList.end();
+}
+
+void BuildingMap::printMap() {
+  cout << "printing map" << endl;
+  for (auto &it : vertexList) {
+    it.second.printVertex();
+    cout << endl;
+  }
+}
+
+void add_all_doors(BuildingMap &map);
+void add_all_connectivity(BuildingMap &map);
 bool is_intersection(string name);
 string cardinal_to_relative(Direction travelling, Direction side);
 string traverse_hallway(Vertex *&v, Direction travelling, BuildingMap m);
 string get_other_hallways(Vertex *v, Direction travelling);
 string travel_all_options(Vertex *v, Direction travelling, BuildingMap m);
+bool valid_direction(string dir, Direction &o);
 
 /* Adds all doors to the map.
    MUST HAVE "all_door.txt" IN THE SAME FOLDER!!! */
@@ -649,30 +630,9 @@ bool valid_direction(string dir, Direction &o) {
   }
 }
 
-/* READ THIS PLEASE!!!!
-   to run this, type ./run_promptgen.sh
-   after it will prompt you for the starting room and the starting orientation
-   (orientation is NOT case sensitive)
-   starting at doors that connect directly to an intersection provides some unwanted output.
-   Other than that, I am not sure of other bugs. */
-int main(int argc, char *argv[]) {
-  BuildingMap ahg;
-  add_all_doors(ahg);
-  add_all_connectivity(ahg);
-  // ahg.printMap();
-
-  Direction orientation = INTER;
-  vector<string> prompt;
-  /* Validate args */
-  if (argc == 3 && ahg.contains(argv[1]) && valid_direction(argv[2], orientation)) {
-    /* args are valid */
-    prompt = generate_prompt(argv[1], orientation, ahg);
-  } else {
-    /* assume default */
-    prompt = generate_prompt("maindoor", EAST, ahg);
-  }
-  cout << prompt[0] << prompt[1] << endl;
-  return 0;
+BuildingMap init_map() {
+  BuildingMap m;
+  add_all_doors(m);
+  add_all_connectivity(m);
+  return m;
 }
-
-
