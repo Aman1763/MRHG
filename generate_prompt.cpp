@@ -217,50 +217,50 @@ void add_all_connectivity(BuildingMap &map) {
    (in retrospect couldve done this recursively quite easily) */
 vector<string> generate_prompt(string start, Direction orientation, BuildingMap map) {
   vector<string> fullPrompt;
-  string prompt1 = "## Building layout\n\n### Initial Position\n";
-  prompt1 += "- **Current Position:** (Facing ";
-  string current_pos = "(Facing "; 
+  string prompt1 = R"(## Building layout\n\n### Initial Position\n)";
+  prompt1 += R"(- **Current Position:** (Facing )";
+  string current_pos = R"((Facing )"; 
   switch (orientation) {
     case NORTH:
-      prompt1 += "North ";
-      current_pos += "North ";
+      prompt1 += R"(North )";
+      current_pos += R"(North )";
       break;
     case SOUTH:
-      prompt1 += "South ";
-      current_pos += "South ";
+      prompt1 += R"(South )";
+      current_pos += R"(South )";
       break;
     case EAST:
-      prompt1 += "East ";
-      current_pos += "East ";
+      prompt1 += R"(East )";
+      current_pos += R"(East )";
       break;
     case WEST:
-      prompt1 += "West ";
-      current_pos += "West ";
+      prompt1 += R"(West )";
+      current_pos += R"(West )";
       break;
   }
 
   bool is_intersection = false;
-  if (start == "maindoor") {
-    prompt1 += "at the entrance)\n\n";
-    current_pos += "at the entrance)";
-  } else if (start.substr(0, start.size() - 1) == "intersection") {
+  if (start == R"(maindoor)") {
+    prompt1 += R"(at the entrance)\n\n)";
+    current_pos += R"(at the entrance))";
+  } else if (start.substr(0, start.size() - 1) == R"(intersection)") {
     is_intersection = true;
     if (start.at(start.size() - 1) == '0') {
-      prompt1 += "at a L intersection)\n\n";
-      current_pos += "at a L intersection)";
+      prompt1 += R"(at a L intersection)\n\n)";
+      current_pos += R"(at a L intersection))";
     } else {
-      prompt1 += "at a T intersection)\n\n";
-      current_pos += "at a T intersection)";
+      prompt1 += R"(at a T intersection)\n\n)";
+      current_pos += R"(at a T intersection))";
     }
   } else {
-    prompt1 += "at door " + start + ")\n\n";
-    current_pos += "at door " + start + ")";
+    prompt1 += R"(at door )" + start + R"()\n\n)";
+    current_pos += R"(at door )" + start + R"())";
   }
   
-  prompt1 += "### Desired Position\n- **Destination:** ";
+  prompt1 += R"(### Desired Position\n- **Destination:** )";
   fullPrompt.push_back(prompt1);
 
-  string prompt2 = "(MAKE SURE TO PARSE EACH HALLWAY TO ENSURE THE DESTINATION IS IN THE HALLWAY YOU THINK IT IS, THE DOOR ORDER MAY BE CONFUSING AND YOU CAN'T RELY ON CHRONOLOGICAL ANALYSIS)\n\n";
+  string prompt2 = R"((MAKE SURE TO PARSE EACH HALLWAY TO ENSURE THE DESTINATION IS IN THE HALLWAY YOU THINK IT IS, THE DOOR ORDER MAY BE CONFUSING AND YOU CAN'T RELY ON CHRONOLOGICAL ANALYSIS)\n\n)";
   Vertex startingPoint = map.getVertex(start);
   Direction travelling;
   /* Determine which cardinal direction is Right. */
@@ -282,7 +282,7 @@ vector<string> generate_prompt(string start, Direction orientation, BuildingMap 
   Vertex *next = map.getNextVertex(start, travelling);
   /* traverse to the right (if it exists) */
   if (next) {
-    prompt2 += "### Right Hallway " + current_pos + "\n";
+    prompt2 += R"(### Right Hallway )" + current_pos + R"(\n)";
     prompt2 += traverse_hallway(next, travelling, map);
 
     /* Here we are either at the end of a hallway or we are at an intersection. */
@@ -294,10 +294,10 @@ vector<string> generate_prompt(string start, Direction orientation, BuildingMap 
       if (connectivity > 1) {
         switch (connectivity) {
           case 2:
-            prompt2 += "**L intersection with a hallway " + get_other_hallways(next, travelling) + "\n";
+            prompt2 += R"(**L intersection with a hallway )" + get_other_hallways(next, travelling) + R"(\n)";
             break;
           case 3:
-            prompt2 += "**T intersection with hallways " + get_other_hallways(next, travelling) + "\n";
+            prompt2 += R"(**T intersection with hallways )" + get_other_hallways(next, travelling) + R"(\n)";
             break;
         }
         /* next step is to travel all directions we can. */
@@ -324,7 +324,7 @@ vector<string> generate_prompt(string start, Direction orientation, BuildingMap 
     
     next = map.getNextVertex(start, travelling);
     if (next) {
-      prompt2 += "### Left Hallway " + current_pos + "\n";
+      prompt2 += R"(### Left Hallway )" + current_pos + R"(\n)";
       prompt2 += traverse_hallway(next, travelling, map);
 
       if (next) {
@@ -332,10 +332,10 @@ vector<string> generate_prompt(string start, Direction orientation, BuildingMap 
         if (connectivity > 1) {
           switch (connectivity) {
             case 2:
-              prompt2 += "**L intersection with a hallway " + get_other_hallways(next, travelling) + "\n";
+              prompt2 += R"(**L intersection with a hallway )" + get_other_hallways(next, travelling) + R"(\n)";
               break;
             case 3:
-              prompt2 += "**T intersection with hallways " + get_other_hallways(next, travelling) + "\n";
+              prompt2 += R"(**T intersection with hallways )" + get_other_hallways(next, travelling) + R"(\n)";
               break;
           }
           prompt2 += travel_all_options(next, travelling, map);
@@ -347,7 +347,7 @@ vector<string> generate_prompt(string start, Direction orientation, BuildingMap 
   travelling = orientation;
   next = map.getNextVertex(start, travelling);
   if (next) {
-    prompt2 += "## hallway forward " + current_pos + "\n";
+    prompt2 += R"(## hallway forward )" + current_pos + R"(\n)";
     prompt2 += traverse_hallway(next, travelling, map);
     
     if (next) {
@@ -355,11 +355,11 @@ vector<string> generate_prompt(string start, Direction orientation, BuildingMap 
       if (connectivity > 1) {
         switch (connectivity) {
           case 2:
-            prompt2 += "**L intersection with a hallway " + get_other_hallways(next, travelling) + "\n";
+            prompt2 += R"(**L intersection with a hallway )" + get_other_hallways(next, travelling) + R"(\n)";
             break;
           case 3:
-              prompt2 += "**T intersection with hallways " + get_other_hallways(next, travelling) + "\n";
-              break;
+            prompt2 += R"(**T intersection with hallways )" + get_other_hallways(next, travelling) + R"(\n)";
+            break;
         }
         prompt2 += travel_all_options(next, travelling, map);
       }
@@ -384,7 +384,7 @@ vector<string> generate_prompt(string start, Direction orientation, BuildingMap 
 
   next = map.getNextVertex(start, travelling);
   if (next) {
-    prompt2 += "## hallway behind you " + current_pos + "\n";
+    prompt2 += R"(## hallway behind you )" + current_pos + R"(\n)";
     prompt2 += traverse_hallway(next, travelling, map);
     
     if (next) {
@@ -392,11 +392,11 @@ vector<string> generate_prompt(string start, Direction orientation, BuildingMap 
       if (connectivity > 1) {
         switch (connectivity) {
           case 2:
-            prompt2 += "**L intersection with a hallway " + get_other_hallways(next, travelling) + "\n";
+            prompt2 += R"(**L intersection with a hallway )" + get_other_hallways(next, travelling) + R"(\n)";
             break;
           case 3:
-              prompt2 += "**T intersection with hallways " + get_other_hallways(next, travelling) + "\n";
-              break;
+            prompt2 += R"(**T intersection with hallways )" + get_other_hallways(next, travelling) + R"(\n)";
+            break;
         }
         prompt2 += travel_all_options(next, travelling, map);  
       }
@@ -415,9 +415,9 @@ string cardinal_to_relative(Direction travelling, Direction side) {
   if (travelling == NORTH) {
     switch (side) {
       case EAST:
-        return "(Right)\n";
+        return R"((Right)\n)";
       case WEST:
-        return "(Left)\n";
+        return R"((Left)\n)";
       default:
         /* prevent warnings */
         return "";
@@ -425,9 +425,9 @@ string cardinal_to_relative(Direction travelling, Direction side) {
   } else if (travelling == SOUTH) {
     switch (side) {
       case EAST:
-        return "(Left)\n";
+        return R"((Left)\n)";
       case WEST:
-        return "(Right)\n";
+        return R"((Right)\n)";
       default:
         /* prevent warnings */
         return "";
@@ -435,9 +435,9 @@ string cardinal_to_relative(Direction travelling, Direction side) {
   } else if (travelling == EAST) {
     switch (side) {
       case NORTH:
-        return "(Left)\n";
+        return R"((Left)\n)";
       case SOUTH:
-        return "(Right)\n";
+        return R"((Right)\n)";
       default:
         /* prevent warnings */
         return "";
@@ -445,9 +445,9 @@ string cardinal_to_relative(Direction travelling, Direction side) {
   } else {
     switch (side) {
       case NORTH:
-        return "(Right)\n";
+        return R"((Right)\n)";
       case SOUTH:
-        return "(Left)\n";
+        return R"((Left)\n)";
       default:
         /* prevent warnings */
         return "";
@@ -456,7 +456,7 @@ string cardinal_to_relative(Direction travelling, Direction side) {
 }
 
 string traverse_hallway(Vertex *&v, Direction travelling, BuildingMap m) {
-  string ret = "- **Room Sequence:**\n";
+  string ret = R"(- **Room Sequence:**\n)";
   int cnt = 1;
   do {
     if (cnt > 1) {
@@ -464,7 +464,7 @@ string traverse_hallway(Vertex *&v, Direction travelling, BuildingMap m) {
     }
     if (is_intersection(v->getName()))
       break;
-    ret += to_string(cnt) + ". " + v->getName() + " ";
+    ret += to_string(cnt) + R"(. )" + v->getName() + R"( )";
     Direction side = v->getWall();
     ret += cardinal_to_relative(travelling, side);
     cnt++;
@@ -479,17 +479,17 @@ string get_other_hallways(Vertex *v, Direction travelling) {
     cnt++;
     switch (travelling) {
       case NORTH:
-        options.push_back("in front of you");
+        options.push_back(R"(in front of you)");
         break;
       case SOUTH:
         // options.push_back("behind you");
         cnt--;
         break;
       case EAST:
-        options.push_back("to your left");
+        options.push_back(R"(to your left)");
         break;
       case WEST:
-        options.push_back("to your Right");
+        options.push_back(R"(to your Right)");
         break;
     }
   }
@@ -501,13 +501,13 @@ string get_other_hallways(Vertex *v, Direction travelling) {
         cnt--;
         break;
       case SOUTH:
-        options.push_back("in front of you");
+        options.push_back(R"(in front of you)");
         break;
       case EAST:
-        options.push_back("to your left");
+        options.push_back(R"(to your left)");
         break;
       case WEST:
-        options.push_back("to your right");
+        options.push_back(R"(to your Right)");
         break;
     }
   }
@@ -515,13 +515,13 @@ string get_other_hallways(Vertex *v, Direction travelling) {
     cnt++;
     switch (travelling) {
       case NORTH:
-        options.push_back("to your right");
+        options.push_back(R"(to your Right)");
         break;
       case SOUTH:
-        options.push_back("to your left");
+        options.push_back(R"(to your left)");
         break;
       case EAST:
-        options.push_back("in front of you");
+        options.push_back(R"(in front of you)");
         break;
       case WEST:
         // options.push_back("behind you");
@@ -533,44 +533,44 @@ string get_other_hallways(Vertex *v, Direction travelling) {
     cnt++;
     switch (travelling) {
       case NORTH:
-        options.push_back("to your left");
+        options.push_back(R"(to your left)");
         break;
       case SOUTH:
-        options.push_back("to your right");
+        options.push_back(R"(to your Right)");
         break;
       case EAST:
         // options.push_back("behind you");
         cnt--;
         break;
       case WEST:
-        options.push_back("in front of you");
+        options.push_back(R"(in front of you)");
         break;
     }
   }
-  string ret = "";
+  string ret = R"()";
   for (int i = 0; i < cnt; i++) {
-    ret += options[i] + " and ";
+    ret += options[i] + R"( and )";
   }
   return ret.substr(0, ret.size() - 5);
 }
 
 string travel_all_options(Vertex *v, Direction travelling, BuildingMap m) {
   /* fuck it this will be recursive (nothing bad could possibly happen) */
-  string ret = "- **next hallway ";
+  string ret = R"(- **next hallway )";
   Vertex *next;
   if (v->getConnectivity() == 2) {
     /* handling the L */
     switch (travelling) {
       case SOUTH:
-        ret += "(Turning left at the L intersection)\n";
+        ret += R"((Turning left at the L intersection)\n)";
         next = v->getVertex(EAST);
         ret += traverse_hallway(next, EAST, m);
         break;
       case WEST:
-        ret += "(Turning right at the L intersection)\n";
+        ret += R"((Turning right at the L intersection)\n)";
         next = v->getVertex(NORTH);
         ret += traverse_hallway(next, NORTH, m);
-        ret += "**T intersection with hallways " + get_other_hallways(next, NORTH) + "\n\n";
+        ret += R"(**T intersection with hallways )" + get_other_hallways(next, NORTH) + R"(\n\n)";
         ret += travel_all_options(next, NORTH, m);
         break;
     }
@@ -578,29 +578,29 @@ string travel_all_options(Vertex *v, Direction travelling, BuildingMap m) {
     /* handling the T */
     switch (travelling) {
       case NORTH:
-        ret += "(Going straight at the T intersection)\n";
+        ret += R"((Going straight at the T intersection)\n)";
         next = v->getVertex(NORTH);
         ret += traverse_hallway(next, NORTH, m);
-        ret += "\n- **next hallway (Going right at the T intersection)\n";
+        ret += R"(\n- **next hallway (Going right at the T intersection)\n)";
         next = v->getVertex(EAST);
         ret += traverse_hallway(next, EAST, m);
         break;
       case WEST:
-        ret += "(Going right at the T intersection)\n";
+        ret += R"((Going right at the T intersection)\n)";
         next = v->getVertex(NORTH);
         ret += traverse_hallway(next, NORTH, m);
-        ret += "\n- **next hallway (Going left at the T intersection)\n";
+        ret += R"(\n- **next hallway (Going left at the T intersection)\n)";
         next = v->getVertex(SOUTH);
-        ret += traverse_hallway(next, SOUTH, m) + "\n";
+        ret += traverse_hallway(next, SOUTH, m) + R"(\n)";
         ret += travel_all_options(next, SOUTH, m);
         break;
       case SOUTH:
-        ret += "(Going left at the T intersection)\n";
+        ret += R"((Going left at the T intersection)\n)";
         next = v->getVertex(EAST);
         ret += traverse_hallway(next, EAST, m);
-        ret += "\n- **next hallway (Going straight at the T intersection)\n";
+        ret += R"(\n- **next hallway (Going straight at the T intersection)\n)";
         next = v->getVertex(SOUTH);
-        ret += traverse_hallway(next, SOUTH, m) + "\n";
+        ret += traverse_hallway(next, SOUTH, m) + R"(\n)";
         ret += travel_all_options(next, SOUTH, m);
         break;
     }

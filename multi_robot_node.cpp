@@ -4,7 +4,10 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <vector>
 #include <curl/curl.h>
+#include "generate_prompt.h"
+
 
 /* A constant array that holds the first half of each prompt */
 const std::string front_prompt[] = {R"(## Building Layout\n\n### Initial Position\n- **Current Position:** (Facing North at the entrance)\n\n### Desired Position\n- **Destination:**)",
@@ -72,6 +75,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "multi_robot_node");
     ros::NodeHandle nh;
 
+    BuildingMap ahg = init_map();
+
     // Add your ROS publishers and subscribers here if needed
     ros::Publisher directions_pub = nh.advertise<std_msgs::String>("directions", 10);
     if (curl)
@@ -103,12 +108,24 @@ int main(int argc, char **argv)
                 continue;
             }
 
+            /* have to get a way to determine the orientation and translate it
+               to the Direction enum. */
+            vector<string> prompt = generate_prompt(roomNumber, NORTH, ahg);
+
             // Prepare the postData with the user's room number
+        //     std::string postData = R"({
+        //     "model": "gpt-4",
+        //     "messages": [
+        //         {"role": "system", "content": "You are a helpful assistant."},
+        //         {"role": "user", "content": ")" + front_prompt[curr_location] + roomNumber + back_prompt[curr_location] + R"("}
+        //     ],
+        //     "max_tokens": 200
+        // })";
             std::string postData = R"({
             "model": "gpt-4",
             "messages": [
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": ")" + front_prompt[curr_location] + roomNumber + back_prompt[curr_location] + R"("}
+                {"role": "user", "content": ")" + prompt[0] + roomNumber + prompt[1] + R"("}
             ],
             "max_tokens": 200
         })";
